@@ -1,0 +1,14 @@
+{
+  "name": "fc26-save-parser",
+  "version": "1.0.0",
+  "description": "Node.js parser for EA FC 26 save files",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fifa-career-save-parser": "^0.1.1"
+  }
+}
