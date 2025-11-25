@@ -15,6 +15,85 @@
 > ⚠️ **Nota:** Jogadores da base do jogo aparecem como "Player #ID". 
 > [Veja detalhes](#%EF%B8%8F-limitação-conhecida-resolução-parcial-de-nomes)
 
+## 🎮 Uso
+
+### Comandos Básicos
+
+Para iniciar a CLI:
+```bash
+python -m src.cli.main
+```
+
+---
+
+## 🤖 Queries com IA (Gemini)
+
+### Como Usar
+
+**Modo Interativo (Recomendado):**
+```bash
+python -m src.cli.main query
+
+# Interface interativa
+# Digite suas perguntas em português
+# Digite 'sair' para encerrar
+```
+
+**Modo Direto (Query única):**
+```bash
+python -m src.cli.main query "Quais são os 10 melhores jogadores?"
+```
+
+### Exemplos de Perguntas
+
+**Top Players e Rankings:**
+✅ "Quais são os 5 melhores jogadores?"
+✅ "Me mostre os 10 atacantes com maior overall"
+✅ "Quem são os jovens com maior potencial?"
+
+**Informações Específicas:**
+✅ "Quem é o Player #71055?"
+✅ "Me fale sobre o Adson"
+✅ "Qual a idade do melhor jogador?"
+
+**Estatísticas:**
+✅ "Qual o overall médio do elenco?"
+✅ "Quantos jogadores tenho com potencial acima de 80?"
+✅ "Qual a média de idade do time?"
+
+**Comparações:**
+✅ "Compare Player #71055 com Player #238555"
+✅ "Qual a diferença entre meus dois melhores jogadores?"
+✅ "Compare atacantes vs meio-campistas"
+
+**Recomendações:**
+✅ "Quem devo contratar para melhorar o ataque?"
+✅ "Qual posição precisa de reforço?"
+✅ "Quem devo vender?"
+
+### Otimização Automática ⚡
+O sistema decide automaticamente entre:
+
+⚡ **SQL** - Queries simples (rápido, gratuito)
+🤖 **Gemini** - Queries complexas (inteligente, usa tokens)
+
+**Queries SQL (instant, free):**
+"Quantos jogadores tenho?"
+"Top 5 jogadores"
+
+**Queries Gemini (smart, costs tokens):**
+"Quem devo contratar?"
+"Compare os dois melhores"
+
+### Custos 💰
+Modelo: **Gemini Flash** (mais econômico)
+
+~$0.000002 por token
+Query típica: 500-1000 tokens = $0.001-0.002
+100 queries/dia ≈ $0.10-0.20/dia
+
+**Otimização:** Queries simples usam SQL (0 tokens)
+
 ## 📊 Dados Disponíveis
 
 O sistema extrai e analisa diversas tabelas do save file, incluindo:
