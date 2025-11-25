@@ -9,7 +9,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 from typing import Optional
 
-from core.importer import importer
+from src.core.importer import importer
 
 app = typer.Typer(help="FC26 Career Analyzer - AI-powered career mode analysis")
 
@@ -56,7 +56,7 @@ def info():
     """
     Show database information and statistics.
     """
-    from database.models import SessionLocal, Player
+    from src.database.models import SessionLocal, Player
 
     db = SessionLocal()
 
@@ -120,13 +120,9 @@ def info():
         # Note about limitation
         if total_unknown > 0:
             console.print(
-                "\n[dim]ℹ️  Note: Base game players appear as 'Player #ID' because"
-            )
-            console.print(
-                "   their names are stored in the game's internal database,[/dim]"
-            )
-            console.print(
-                "[dim]   not in the save file. This will be enhanced in a future update.[/dim]"
+                "\n[dim]ℹ️  Note: Base game players appear as 'Player #ID' because\n"
+                "   their names are stored in the game's internal database,\n"
+                "   not in the save file. This will be enhanced in a future update.[/dim]"
             )
 
         console.print(
@@ -167,7 +163,7 @@ def query(
         fc26-analyzer query "jogadores jovens com potencial alto"
         fc26-analyzer query --interactive
     """
-    from database.models import get_db
+    from src.database.models import get_db
     from rich.panel import Panel
 
     db = next(get_db())
@@ -210,8 +206,8 @@ def query(
 
 def _process_query(db, question: str, context_type: str, limit: int):
     """Helper function to process a single query."""
-    from llm import GeminiClient, ContextBuilder, PromptBuilder
-    from core.query_router import QueryRouter
+    from src.llm import GeminiClient, ContextBuilder, PromptBuilder
+    from src.core.query_router import QueryRouter
     from rich.panel import Panel
     from rich.markdown import Markdown
     import os

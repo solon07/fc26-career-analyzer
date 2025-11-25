@@ -5,7 +5,7 @@ Converts database data into LLM-friendly context strings
 
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
-from database.models import Player, PlayerInfo
+from src.database.models import Player, PlayerInfo
 
 
 class ContextBuilder:

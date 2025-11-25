@@ -195,8 +195,14 @@ class SaveImporter:
             # We iterate over players_rows as it contains the master list of players
             for player_row in players_rows:
                 playerid = player_row.get("playerid")
-                if not playerid:
+                if playerid is None:
                     continue
+
+                # Debug first few players
+                if imported + updated < 5:
+                    print(
+                        f"   Processing player {playerid} (Raw ID: {player_row.get('playerid')})"
+                    )
 
                 # Get attributes (if any)
                 attrs = attributes_map.get(playerid, {})

@@ -47,6 +47,7 @@ class ParserBridge:
                 cwd=str(self.parser_dir),
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
                 timeout=60,  # 60 second timeout
             )
 
