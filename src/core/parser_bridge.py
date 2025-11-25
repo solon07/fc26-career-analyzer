@@ -16,7 +16,7 @@ class ParserBridge:
 
     def __init__(self):
         self.parser_dir = Path(__file__).parent.parent.parent / "parser"
-        self.parser_script = self.parser_dir / "test_parser.js"
+        self.parser_script = self.parser_dir / "parse_save.js"
         self.output_file = self.parser_dir / "output" / "test_parse.json"
 
     def parse_save(self, save_path: str = None) -> Dict[str, Any]:
@@ -39,11 +39,17 @@ class ParserBridge:
         if not self.parser_script.exists():
             raise FileNotFoundError(f"Parser script not found: {self.parser_script}")
 
+        # Build command with save_path if provided
+        cmd = ["node", str(self.parser_script)]
+        if save_path:
+            cmd.append(save_path)
+            print(f"Using save file: {save_path}")
+
         # Call Node.js parser
         try:
             # Run parser script
             result = subprocess.run(
-                ["node", str(self.parser_script)],
+                cmd,
                 cwd=str(self.parser_dir),
                 capture_output=True,
                 text=True,
