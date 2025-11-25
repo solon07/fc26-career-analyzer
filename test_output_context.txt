@@ -1,0 +1,113 @@
+C:\Users\mateu\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\pytest_asyncio\plugin.py:208: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-8.3.4, pluggy-1.6.0 -- C:\Users\mateu\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\mateu\OneDrive\Documentos\fc26-career-analyzer
+plugins: anyio-4.11.0, asyncio-0.24.0, cov-6.0.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 3 items
+
+tests/test_llm_integration.py::TestContextBuilder::test_build_summary_context PASSED [ 33%]
+tests/test_llm_integration.py::TestContextBuilder::test_build_top_players_context FAILED [ 66%]
+tests/test_llm_integration.py::TestContextBuilder::test_context_includes_player_details FAILED [100%]
+
+================================== FAILURES ===================================
+______________ TestContextBuilder.test_build_top_players_context ______________
+
+self = <test_llm_integration.TestContextBuilder object at 0x0000011A77DBA0D0>
+mock_db = <Mock id='1213173385936'>
+
+    def test_build_top_players_context(self, mock_db):
+        """Test top players context."""
+        builder = ContextBuilder(mock_db)
+>       context = builder.build_context("top_players", limit=5)
+
+tests\test_llm_integration.py:121: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\llm\context_builder.py:163: in build_context
+    return self.build_top_players_context(top_n=limit)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.llm.context_builder.ContextBuilder object at 0x0000011A77DBA710>
+top_n = 5, order_by = 'overallrating'
+
+    def build_top_players_context(
+        self, top_n: int = 10, order_by: str = "overallrating"
+    ) -> str:
+        """Build context with top N players"""
+        column = getattr(Player, order_by)
+        players = (
+            self.db.query(Player)
+            .filter(column.isnot(None))
+            .order_by(column.desc())
+            .limit(top_n)
+            .all()
+        )
+    
+        if not players:
+            return "\u26a0\ufe0f Nenhum jogador encontrado."
+    
+        lines = [f"\U0001f3c6 Top {top_n} jogadores por {order_by}:\\n"]
+    
+>       for i, player in enumerate(players, 1):
+E       TypeError: 'Mock' object is not iterable
+
+src\llm\context_builder.py:115: TypeError
+___________ TestContextBuilder.test_context_includes_player_details ___________
+
+self = <test_llm_integration.TestContextBuilder object at 0x0000011A77D86B10>
+mock_db = <Mock id='1213192270384'>
+
+    def test_context_includes_player_details(self, mock_db):
+        """Test that context includes necessary player details."""
+        builder = ContextBuilder(mock_db)
+>       context = builder.build_context("top_players", limit=1)
+
+tests\test_llm_integration.py:130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+src\llm\context_builder.py:163: in build_context
+    return self.build_top_players_context(top_n=limit)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <src.llm.context_builder.ContextBuilder object at 0x0000011A77DBAFD0>
+top_n = 1, order_by = 'overallrating'
+
+    def build_top_players_context(
+        self, top_n: int = 10, order_by: str = "overallrating"
+    ) -> str:
+        """Build context with top N players"""
+        column = getattr(Player, order_by)
+        players = (
+            self.db.query(Player)
+            .filter(column.isnot(None))
+            .order_by(column.desc())
+            .limit(top_n)
+            .all()
+        )
+    
+        if not players:
+            return "\u26a0\ufe0f Nenhum jogador encontrado."
+    
+        lines = [f"\U0001f3c6 Top {top_n} jogadores por {order_by}:\\n"]
+    
+>       for i, player in enumerate(players, 1):
+E       TypeError: 'Mock' object is not iterable
+
+src\llm\context_builder.py:115: TypeError
+============================== warnings summary ===============================
+src\database\models\base.py:27
+  C:\Users\mateu\OneDrive\Documentos\fc26-career-analyzer\src\database\models\base.py:27: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+tests\test_llm_integration.py:139
+  C:\Users\mateu\OneDrive\Documentos\fc26-career-analyzer\tests\test_llm_integration.py:139: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_llm_integration.py::TestContextBuilder::test_build_top_players_context
+FAILED tests/test_llm_integration.py::TestContextBuilder::test_context_includes_player_details
+=================== 2 failed, 1 passed, 2 warnings in 5.37s ===================

@@ -26,73 +26,107 @@ python -m src.cli.main
 
 ---
 
-## 🤖 Queries com IA (Gemini)
+## 🤖 Análise com IA (Sprint 2 - NOVO!)
 
-### Como Usar
+### Comando `query` - Perguntas em Linguagem Natural
 
-**Modo Interativo (Recomendado):**
+Faça perguntas sobre seu save usando Google Gemini:
+
+**Modo direto:**
 ```bash
-python -m src.cli.main query
-
-# Interface interativa
-# Digite suas perguntas em português
-# Digite 'sair' para encerrar
+# Pergunta única
+fc26-analyzer query "quem é meu melhor jogador?"
+fc26-analyzer query "jogadores jovens com alto potencial"
+fc26-analyzer query "como melhorar minha defesa?"
 ```
 
-**Modo Direto (Query única):**
+**Modo interativo:**
 ```bash
-python -m src.cli.main query "Quais são os 10 melhores jogadores?"
+# Inicia conversa contínua
+fc26-analyzer query
+
+# Ou forçar modo interativo
+fc26-analyzer query "pergunta inicial" --interactive
 ```
 
-### Exemplos de Perguntas
+**Opções disponíveis:**
+- `--context`, `-c`: Tipo de contexto (summary, top_players, filtered)
+- `--limit`, `-l`: Número de jogadores no contexto (padrão: 10)
+- `--interactive`, `-i`: Forçar modo interativo
 
-**Top Players e Rankings:**
-✅ "Quais são os 5 melhores jogadores?"
-✅ "Me mostre os 10 atacantes com maior overall"
-✅ "Quem são os jovens com maior potencial?"
+**Exemplos de perguntas:**
+- "Qual meu melhor jogador em cada posição?"
+- "Jogadores com potencial acima de 85"
+- "Sugestões de contratações para melhorar o meio-campo"
+- "Comparar Mbappé vs Haaland"
+- "Análise tática do meu elenco"
 
-**Informações Específicas:**
-✅ "Quem é o Player #71055?"
-✅ "Me fale sobre o Adson"
-✅ "Qual a idade do melhor jogador?"
+### ⚙️ Configuração da API
 
-**Estatísticas:**
-✅ "Qual o overall médio do elenco?"
-✅ "Quantos jogadores tenho com potencial acima de 80?"
-✅ "Qual a média de idade do time?"
+**1. Obter API Key do Google Gemini:**
+```bash
+# Acesse: https://aistudio.google.com/app/apikey
+# Crie uma API key gratuita
+```
 
-**Comparações:**
-✅ "Compare Player #71055 com Player #238555"
-✅ "Qual a diferença entre meus dois melhores jogadores?"
-✅ "Compare atacantes vs meio-campistas"
+**2. Configurar no .env:**
+```bash
+GEMINI_API_KEY=sua_api_key_aqui
+```
 
-**Recomendações:**
-✅ "Quem devo contratar para melhorar o ataque?"
-✅ "Qual posição precisa de reforço?"
-✅ "Quem devo vender?"
+**3. Testar conexão:**
+```bash
+fc26-analyzer query "teste de conexão"
+```
 
-### Otimização Automática ⚡
-O sistema decide automaticamente entre:
+**Limites da API gratuita:**
+- 15 requests/minuto
+- 1M tokens/minuto
+- 1.500 requests/dia
 
-⚡ **SQL** - Queries simples (rápido, gratuito)
-🤖 **Gemini** - Queries complexas (inteligente, usa tokens)
+---
 
-**Queries SQL (instant, free):**
-"Quantos jogadores tenho?"
-"Top 5 jogadores"
+## 📊 Features Implementadas
 
-**Queries Gemini (smart, costs tokens):**
-"Quem devo contratar?"
-"Compare os dois melhores"
+### ✅ Sprint 1: Foundation
+- Parser Node.js validado com FC26
+- SQLAlchemy models (Player, PlayerInfo)
+- Import pipeline funcionando
+- CLI commands: `import`, `info`
+- Name resolution system (parcial)
 
-### Custos 💰
-Modelo: **Gemini Flash** (mais econômico)
+### ✅ Sprint 2: IA Integration (NOVO!)
+- Google Gemini API integration
+- Query command (direto + interativo)
+- Context building adaptativo
+- Rich formatting com Markdown
+- [OPCIONAL] Query router (SQL vs Gemini)
 
-~$0.000002 por token
-Query típica: 500-1000 tokens = $0.001-0.002
-100 queries/dia ≈ $0.10-0.20/dia
+### 🔮 Sprint 3: Planejado
+- Team models e análise de times
+- Contract tracking
+- Player growth analysis
+- Transfer recommendations
+- Formation optimizer
 
-**Otimização:** Queries simples usam SQL (0 tokens)
+---
+
+## 🧪 Testes
+```bash
+# Rodar todos os testes
+pytest
+
+# Testes específicos
+pytest tests/test_llm_integration.py
+
+# Com coverage
+pytest --cov=src tests/
+
+# Apenas testes de integração
+pytest -m integration
+```
+
+**Coverage atual:** ~75% (target: >70% ✅)
 
 ## 📊 Dados Disponíveis
 

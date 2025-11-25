@@ -1,0 +1,40 @@
+C:\Users\mateu\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\pytest_asyncio\plugin.py:208: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts =============================
+platform win32 -- Python 3.13.9, pytest-8.3.4, pluggy-1.6.0 -- C:\Users\mateu\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\mateu\OneDrive\Documentos\fc26-career-analyzer
+plugins: anyio-4.11.0, asyncio-0.24.0, cov-6.0.0
+asyncio: mode=Mode.STRICT, default_loop_scope=None
+collecting ... collected 1 item
+
+tests/test_llm_integration.py::TestGeminiClient::test_client_requires_api_key FAILED [100%]
+
+================================== FAILURES ===================================
+________________ TestGeminiClient.test_client_requires_api_key ________________
+
+self = <test_llm_integration.TestGeminiClient object at 0x0000021240A2E0D0>
+
+    def test_client_requires_api_key(self):
+        """Test client raises error without API key."""
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests\test_llm_integration.py:22: Failed
+---------------------------- Captured stdout call -----------------------------
+Gemini client initialized (model: gemini-flash-latest)
+============================== warnings summary ===============================
+src\database\models\base.py:27
+  C:\Users\mateu\OneDrive\Documentos\fc26-career-analyzer\src\database\models\base.py:27: MovedIn20Warning: The ``declarative_base()`` function is now available as sqlalchemy.orm.declarative_base(). (deprecated since: 2.0) (Background on SQLAlchemy 2.0 at: https://sqlalche.me/e/b8d9)
+    Base = declarative_base()
+
+tests\test_llm_integration.py:130
+  C:\Users\mateu\OneDrive\Documentos\fc26-career-analyzer\tests\test_llm_integration.py:130: PytestUnknownMarkWarning: Unknown pytest.mark.integration - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.integration
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_llm_integration.py::TestGeminiClient::test_client_requires_api_key
+======================== 1 failed, 2 warnings in 5.15s ========================

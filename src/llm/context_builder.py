@@ -145,3 +145,22 @@ class ContextBuilder:
 - Melhor jogador: {top_player.detailed_display if top_player else 'N/A'}
 """
         return summary
+
+    def build_context(self, context_type: str, limit: int = 10) -> str:
+        """
+        Build context based on type
+
+        Args:
+            context_type: Type of context (summary, top_players, filtered)
+            limit: Limit for lists
+
+        Returns:
+            Context string
+        """
+        if context_type == "summary":
+            return self.build_summary_context()
+        elif context_type == "top_players":
+            return self.build_top_players_context(top_n=limit)
+        else:
+            # Default to player list
+            return self.build_player_context(limit=limit)

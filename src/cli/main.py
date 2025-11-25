@@ -6,9 +6,8 @@ import sys
 
 import typer
 from rich.console import Console
-from rich.panel import Panel
-from rich.markdown import Markdown
-from src.llm import GeminiClient, PromptBuilder, ContextBuilder
+from rich.prompt import Prompt
+from typing import Optional
 
 from src.core.importer import importer
 
@@ -140,167 +139,143 @@ def info():
 
 @app.command()
 def query(
-    question: str = typer.Argument(None, help="Pergunta sobre sua carreira (opcional)"),
+    question: Optional[str] = typer.Argument(
+        None,
+        help="Pergunta sobre seu save (opcional, inicia modo interativo se omitido)",
+    ),
+    context_type: str = typer.Option(
+        "top_players",
+        "--context",
+        "-c",
+        help="Tipo de contexto: summary, top_players, filtered",
+    ),
+    limit: int = typer.Option(
+        10, "--limit", "-l", help="Número máximo de jogadores no contexto"
+    ),
+    interactive: bool = typer.Option(
+        False,
+        "--interactive",
+        "-i",
+        help="Forçar modo interativo mesmo com pergunta fornecida",
+    ),
 ):
     """
-    Faça perguntas sobre sua carreira usando IA (Gemini)
+    Faça perguntas sobre seu save usando IA (Gemini).
 
     Exemplos:
-        python -m src.cli.main query "Quais são os 5 melhores jogadores?"
-        python -m src.cli.main query  # Modo interativo
+        fc26-analyzer query "quem é meu melhor jogador?"
+        fc26-analyzer query "jogadores jovens com potencial alto"
+        fc26-analyzer query --interactive
     """
-    from src.database.models import SessionLocal, Player
+    from ..database.models import get_db
+    from rich.panel import Panel
 
-    db = SessionLocal()
+    db = next(get_db())
+
+    # Modo interativo se não forneceu pergunta ou se --interactive
+    if question is None or interactive:
+        console.print(
+            Panel.fit(
+                "[bold cyan]🤖 FC26 Career Analyzer - Modo Interativo[/bold cyan]\n\n"
+                "Faça perguntas sobre seu save em linguagem natural.\n"
+                "Digite 'sair' ou 'exit' para encerrar.\n"
+                "Digite 'limpar' para resetar o contexto.",
+                border_style="cyan",
+            )
+        )
+
+        # Loop interativo
+        while True:
+            try:
+                user_question = Prompt.ask("\n[bold yellow]Você[/bold yellow]")
+
+                if user_question.lower() in ["sair", "exit", "quit"]:
+                    console.print("[dim]Encerrando...[/dim]")
+                    break
+
+                if user_question.lower() in ["limpar", "clear", "reset"]:
+                    console.print("[dim]Contexto resetado.[/dim]")
+                    continue
+
+                # Processar pergunta
+                _process_query(db, user_question, context_type, limit)
+
+            except KeyboardInterrupt:
+                console.print("\n[dim]Encerrando...[/dim]")
+                break
+    else:
+        # Modo direto
+        _process_query(db, question, context_type, limit)
+
+
+def _process_query(db, question: str, context_type: str, limit: int):
+    """Helper function to process a single query."""
+    from ..llm import GeminiClient, ContextBuilder, PromptBuilder
+    from ..core.query_router import QueryRouter
+    from rich.panel import Panel
+    from rich.markdown import Markdown
+    import os
+
+    # Try SQL router first
+    router = QueryRouter(db)
+    source, sql_result, gemini_query = router.route(question)
+
+    if source == "sql":
+        # SQL handled it
+        console.print()
+        console.print(
+            Panel(
+                Markdown(sql_result),
+                title="[bold blue]⚡ Resposta Rápida (SQL)[/bold blue]",
+                border_style="blue",
+                padding=(1, 2),
+            )
+        )
+        console.print("[dim]Fonte: SQL direto (sem custo API)[/dim]")
+        return
+
+    # Gemini needed
+    # Verificar API key
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        console.print("[bold red]❌ GEMINI_API_KEY não configurada no .env[/bold red]")
+        raise typer.Exit(1)
 
     try:
-        # Initialize LLM components
-        try:
-            client = GeminiClient()
-            builder = ContextBuilder(db)
-        except ValueError as e:
-            console.print(f"\n[bold red]Erro de configuração:[/bold red] {e}")
-            console.print(
-                "\n[yellow]Verifique se GEMINI_API_KEY está configurada no arquivo .env[/yellow]"
-            )
-            return
-        except Exception as e:
-            console.print(f"\n[bold red]Erro ao inicializar Gemini:[/bold red] {e}")
-            return
+        # Build context
+        with console.status("[bold yellow]Preparando contexto...[/bold yellow]"):
+            context_builder = ContextBuilder(db)
+            context = context_builder.build_context(context_type, limit=limit)
 
-        # Interactive mode if no question provided
-        if question is None:
-            _interactive_query_mode(client, builder, db)
-        else:
-            # Direct query mode
-            _process_single_query(question, client, builder)
+        # Build prompt
+        prompt_builder = PromptBuilder()
+        prompt, system_instruction = prompt_builder.build_prompt(question, context)
 
-    finally:
-        db.close()
+        # Query Gemini
+        with console.status("[bold yellow]Consultando IA...[/bold yellow]"):
+            client = GeminiClient(api_key)
+            result = client.query(prompt, system_instruction)
+            response = result.get("text", "⚠️ Erro ao gerar resposta da IA.")
 
-
-def _interactive_query_mode(client: GeminiClient, builder: ContextBuilder, db):
-    """Interactive query loop"""
-    from src.database.models import Player
-
-    console.print("\n[bold cyan]═══════════════════════════════════════[/bold cyan]")
-    console.print("[bold cyan]   FC26 CAREER ANALYZER - QUERY IA[/bold cyan]")
-    console.print("[bold cyan]═══════════════════════════════════════[/bold cyan]\n")
-
-    console.print("[dim]Faça perguntas sobre sua carreira em linguagem natural.[/dim]")
-    console.print("[dim]Digite 'sair' ou 'exit' para encerrar.[/dim]\n")
-
-    # Show quick stats
-    total_players = db.query(Player).count()
-    console.print(f"[green]Dados carregados:[/green] {total_players} jogadores\n")
-
-    # Query loop
-    query_count = 0
-    while True:
-        try:
-            # Get user input
-            console.print("[bold cyan]Sua pergunta:[/bold cyan] ", end="")
-            user_question = input().strip()
-
-            # Check exit commands
-            if user_question.lower() in ["sair", "exit", "quit", "q"]:
-                console.print("\n[yellow]Encerrando... Até logo![/yellow]\n")
-                break
-
-            # Skip empty input
-            if not user_question:
-                continue
-
-            # Process query
-            query_count += 1
-            _process_single_query(
-                user_question, client, builder, query_number=query_count
-            )
-            console.print()  # Empty line for spacing
-
-        except KeyboardInterrupt:
-            console.print("\n\n[yellow]Interrompido pelo usuário. Até logo![/yellow]\n")
-            break
-        except EOFError:
-            console.print("\n\n[yellow]Entrada encerrada. Até logo![/yellow]\n")
-            break
-
-
-def _process_single_query(
-    question: str,
-    client: GeminiClient,
-    builder: ContextBuilder,
-    query_number: int = None,
-):
-    """Process a single query and display results"""
-
-    # Show processing indicator
-    if query_number:
-        console.print(f"\n[dim]Query #{query_number}[/dim]")
-
-    with console.status("[bold yellow]Analisando pergunta...[/bold yellow]"):
-        try:
-            # Use QueryRouter instead of manual logic
-            from src.llm.query_router import QueryRouter
-
-            router = QueryRouter(db=builder.db, gemini_client=client)
-            result = router.route_query(question)
-
-            if result["success"]:
-                # Show source badge
-                source_badge = {
-                    "sql": "[blue]⚡ SQL[/blue]",
-                    "gemini": "[green]🤖 Gemini[/green]",
-                    "error": "[red]❌ Error[/red]",
-                }.get(result["source"], "")
-
-                # Display response
-                _display_response(
-                    question=question,
-                    response_text=result["answer"],
-                    tokens_used=result["tokens_used"],
-                    source=source_badge,
-                )
-            else:
-                console.print(f"\n[bold red]Erro:[/bold red] {result['answer']}")
-
-        except Exception as e:
-            console.print(f"\n[bold red]Erro inesperado:[/bold red] {e}")
-            import traceback
-
-            console.print(f"[dim]{traceback.format_exc()}[/dim]")
-
-
-def _display_response(
-    question: str, response_text: str, tokens_used: int, source: str = ""
-):
-    """Display formatted response"""
-
-    # Create panel with question
-    console.print()
-    console.print(
-        Panel(f"[bold]{question}[/bold]", title="Pergunta", border_style="cyan")
-    )
-
-    # Display response as markdown
-    console.print()
-    title = f"Resposta {source}" if source else "Resposta"
-    console.print(
-        Panel(
-            Markdown(response_text),
-            title=title,
-            border_style="green",
-            padding=(1, 2),
-        )
-    )
-
-    # Display metadata
-    if tokens_used > 0:
+        # Display response
+        console.print()
         console.print(
-            f"\n[dim]Tokens utilizados: ~{tokens_used} | Custo: ~${tokens_used * 0.000002:.6f}[/dim]"
+            Panel(
+                Markdown(response),
+                title="[bold green]🤖 Resposta da IA (Gemini)[/bold green]",
+                border_style="green",
+                padding=(1, 2),
+            )
         )
-    else:
-        console.print(f"\n[dim]✨ Resposta SQL (sem custo de tokens)[/dim]")
+
+        # Context info
+        console.print(
+            f"\n[dim]Contexto usado: {context_type} | Tamanho: {len(context)} chars[/dim]"
+        )
+
+    except Exception as e:
+        console.print(f"[bold red]❌ Erro ao processar query:[/bold red] {str(e)}")
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":
