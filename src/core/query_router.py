@@ -4,7 +4,7 @@ Query Router - Decide se usa SQL direto ou Gemini.
 
 from typing import Tuple, Optional, Dict, Any
 from sqlalchemy.orm import Session
-from ..database.models import Player
+from database.models import Player
 import re
 
 

@@ -9,7 +9,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 from typing import Optional
 
-from src.core.importer import importer
+from core.importer import importer
 
 app = typer.Typer(help="FC26 Career Analyzer - AI-powered career mode analysis")
 
@@ -56,7 +56,7 @@ def info():
     """
     Show database information and statistics.
     """
-    from src.database.models import SessionLocal, Player
+    from database.models import SessionLocal, Player
 
     db = SessionLocal()
 
@@ -167,7 +167,7 @@ def query(
         fc26-analyzer query "jogadores jovens com potencial alto"
         fc26-analyzer query --interactive
     """
-    from ..database.models import get_db
+    from database.models import get_db
     from rich.panel import Panel
 
     db = next(get_db())
@@ -210,8 +210,8 @@ def query(
 
 def _process_query(db, question: str, context_type: str, limit: int):
     """Helper function to process a single query."""
-    from ..llm import GeminiClient, ContextBuilder, PromptBuilder
-    from ..core.query_router import QueryRouter
+    from llm import GeminiClient, ContextBuilder, PromptBuilder
+    from core.query_router import QueryRouter
     from rich.panel import Panel
     from rich.markdown import Markdown
     import os

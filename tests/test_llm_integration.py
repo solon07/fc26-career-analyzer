@@ -5,8 +5,8 @@ Integration tests for LLM module.
 import pytest
 import os
 from unittest.mock import Mock, patch
-from src.llm import GeminiClient, PromptBuilder, ContextBuilder
-from src.database.models import Player
+from llm import GeminiClient, PromptBuilder, ContextBuilder
+from database.models import Player
 
 
 class TestGeminiClient:
@@ -149,7 +149,7 @@ class TestEndToEndQuery:
     """End-to-end test of query pipeline."""
 
     @pytest.mark.integration
-    @patch("src.llm.gemini_client.genai.GenerativeModel")
+    @patch("llm.gemini_client.genai.GenerativeModel")
     def test_full_query_pipeline(self, mock_model, test_db_with_players):
         """Test complete query flow from CLI to response."""
         # Setup
@@ -176,7 +176,7 @@ class TestEndToEndQuery:
 @pytest.fixture
 def test_db_with_players(db_session):
     """Fixture that provides DB with test players."""
-    from src.database.models import Player
+    from database.models import Player
 
     players = [
         Player(
